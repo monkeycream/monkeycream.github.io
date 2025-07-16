@@ -42,17 +42,18 @@
 
     .pulse-circle
     {
-      animation: pulse-circle 1.5s infinite;
+      animation: pulse 1.5s infinite;
+      transform-origin: center center;
     }
 
-    @keyframes pulse-circle
+    @keyframes pulse
     {
       0%, 100% {
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
         opacity: 0.8;
       }
       50% {
-        transform: scale(1.3);
+        transform: translate(-50%, -50%) scale(1.3);
         opacity: 1;
       }
     }
