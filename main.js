@@ -34,6 +34,7 @@ const COLORS2 = new Set([
 // }));
 
 const ctx = {
+  mode:'prod',
   colors:new Set(COLORS),
   teamCount:0,
   figerCount:1,
@@ -331,22 +332,25 @@ function bttUpdateFun(opts)
 
 function mainLoad()
 {
-  document.addEventListener('click', (e) =>
+  if (ctx.mode === 'dev')
   {
-    const evtId = Date.now() + 'tabubu';
-    createCircle(evtId, e.clientX, e.clientY);
-    const circle = touchesMap.get(evtId);
-    if (circle)
+    document.addEventListener('click', (e) =>
     {
-      circle.addEventListener('click', (e) =>
+      const evtId = Date.now() + 'tabubu';
+      createCircle(evtId, e.clientX, e.clientY);
+      const circle = touchesMap.get(evtId);
+      if (circle)
       {
-        e.stopImmediatePropagation();
-        e.stopPropagation();
-        e.preventDefault();
-        removeCircle(evtId);
-      });
-    }
-  });
+        circle.addEventListener('click', (e) =>
+        {
+          e.stopImmediatePropagation();
+          e.stopPropagation();
+          e.preventDefault();
+          removeCircle(evtId);
+        });
+      }
+    });
+  }
 
   document.addEventListener('touchstart', (e) =>
   {
@@ -407,7 +411,10 @@ function mainLoad()
       it.cb();
     };
     el.addEventListener('touchstart', doCb);//, { passive:true });
-    el.addEventListener('click', doCb);
+    if (ctx.mode === 'dev')
+    {
+      el.addEventListener('click', doCb);
+    }
   });
     
   document.getElementById('testissimo').addEventListener('click', () =>
