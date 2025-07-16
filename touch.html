@@ -4,14 +4,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="main.js"></script>
   <title>Multi-Touch Tracker</title>
   <style>
     body {
       margin: 0;
+      width: 100vw;
       height: 100vh;
-      background: #f9f9f9;
+      color: #E0E0E0;
+      background: #121212;
       overflow: hidden;
       touch-action: none;
+    }
+
+    /*
+    #board
+    {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+      */
+
+    * {
+      user-select: none;
     }
 
     .touch-circle {
@@ -20,9 +36,25 @@
       height: 150px;
       background-color: rgba(0, 150, 255, 0.7);
       border-radius: 50%;
-      pointer-events: none;
       transform: translate(-50%, -50%);
       transition: background-color 0.2s;
+    }
+
+    .pulse-circle
+    {
+      animation: pulse-circle 1.5s infinite;
+    }
+
+    @keyframes pulse-circle
+    {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
     }
 
     .config-set {
@@ -36,10 +68,11 @@
     .config-group {
       display: flex;
       flex-direction: row;
+      /*pointer-events: none;*/
     }
 
     .config-btt {
-      background-color: pink;
+      background-color: green;
       width: 50px;
       height: 50px;
     }
@@ -53,137 +86,23 @@
 </head>
 
 <body>
+  <!-- <div id="board"> -->
+  <!-- </div> -->
   <div id="testissimo"></div>
 
   <div class="config-set">
     <div class="config-group">
-      <div id="team_minus" class="config-btt config-minus">MINUS</div>
-      <div id="team_value" class="config-btt config-value"></div>
-      <div id="team_plus" class="config-btt config-plus">PLUS</div>
+      <div id="team_count_minus" class="config-btt config-minus">-</div>
+      <div id="team_count_value" class="config-btt config-value"></div>
+      <div id="team_count_plus" class="config-btt config-plus">+</div>
     </div>
     <div class="config-group">
-      <div id="team_size_minus" class="config-btt config-minus">MINUS</div>
-      <div id="team_size_value" class="config-btt config-value"></div>
-      <div id="team_size_plus" class="config-btt config-plus">PLUS</div>
+      <div id="finger_count_minus" class="config-btt config-minus">-</div>
+      <div id="finger_count_value" class="config-btt config-value"></div>
+      <div id="finger_count_plus" class="config-btt config-plus">+</div>
     </div>
+    <div id="ctx_debug"></div>
   </div>
-
-
-  <script>
-    const touchesMap = new Map();
-    const TOUCH_LIMIT = 10;
-    const timer = {};
-
-    function stopTimer() {
-      clearTimeout(timer.current);
-      delete timer.current;
-    }
-
-    function restartTimer() {
-      clearTimeout(timer.current);
-      delete timer.current;
-      console.info('start aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-      timer.current = setTimeout(() => {
-        console.info('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-        document.getElementById('testissimo').innerHTML = 'ABEMUS TEAM!!!!!';
-        timer.result = 'done';
-      }, 1000 * 3);
-    }
-
-    // Funzione per creare un nuovo cerchio per un touch
-    function createCircle(id, x, y) {
-      if (timer.result === 'done') {
-        return;
-      }
-      const circle = document.createElement('div');
-      circle.classList.add('touch-circle');
-
-      // Colore casuale per ogni tocco
-      circle.style.backgroundColor = `hsl(${Math.random() * 360}, 80%, 60%)`;
-
-      document.body.appendChild(circle);
-      moveCircle(circle, x, y);
-      touchesMap.set(id, circle);
-      restartTimer();
-    }
-
-    // Aggiorna la posizione del cerchio
-    function moveCircle(circle, x, y) {
-      if (timer.result === 'done') {
-        return;
-      }
-      circle.style.left = `${x}px`;
-      circle.style.top = `${y}px`;
-    }
-
-    // Rimuove il cerchio
-    function removeCircle(id) {
-      if (timer.result === 'done') {
-        return;
-      }
-      const circle = touchesMap.get(id);
-      if (circle) {
-        document.body.removeChild(circle);
-        touchesMap.delete(id);
-      }
-
-      if (touchesMap.size === 0) {
-        stopTimer();
-      }
-    }
-
-    window.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-    });
-
-    document.addEventListener('touchstart', (e) => {
-      for (const touch of e.changedTouches) {
-        createCircle(touch.identifier, touch.clientX, touch.clientY);
-      }
-    });
-
-    document.addEventListener('touchmove', (e) => {
-      for (const touch of e.changedTouches) {
-        const circle = touchesMap.get(touch.identifier);
-        if (circle) {
-          moveCircle(circle, touch.clientX, touch.clientY);
-        }
-      }
-    });
-
-    document.addEventListener('touchend', (e) => {
-      for (const touch of e.changedTouches) {
-        removeCircle(touch.identifier);
-      }
-    });
-
-    document.addEventListener('touchcancel', (e) => {
-      for (const touch of e.changedTouches) {
-        removeCircle(touch.identifier);
-      }
-    });
-
-    function somfun() {
-      //
-    }
-
-    [
-      { id: 'team_minus', cb: somfun },
-      { id: 'team_value', cb: somfun },
-      { id: 'team_plus', cb: somfun },
-      { id: 'team_size_minus', cb: somfun },
-      { id: 'team_size_value', cb: somfun },
-      { id: 'team_size_plus', cb: somfun },
-    ].forEach(it => {
-      const el = document.getElementById(it.id);
-      el.addEventListener('touchstart', (e) => {
-        e.stopImmediatePropagation();
-        e.stopPropagation();
-        e.preventDefault;
-        console.debug('stoppete');
-      });
-    });
-  </script>
 </body>
 
 </html>
