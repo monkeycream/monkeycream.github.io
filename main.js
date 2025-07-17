@@ -48,7 +48,10 @@ function canCreateCircle()
 
 function printCtx()
 {
-  document.getElementById('ctx_debug').innerHTML = `ctx.colors=#${ctx.colors?.length || 0}, touchesMap=#${touchesMap.size}, ctx.result=${ctx.result}, canCreateCircle()=${canCreateCircle()}`;
+  if (ctx.mode === 'dev')
+  {
+    document.getElementById('ctx_debug').innerHTML = `ctx.colors=#${ctx.colors?.length || 0}, touchesMap=#${touchesMap.size}, ctx.result=${ctx.result}, canCreateCircle()=${canCreateCircle()}`;
+  }
 }
 
 function pickColor()
@@ -93,7 +96,9 @@ function stopTimer()
   delete ctx.runningTimer;
   delete ctx.runningInterval;
 
-  document.getElementById('testissimo').innerHTML = '';
+  ctx.countCircle?.remove();
+  delete ctx.countCircle;
+
   printCtx();
 }
 
@@ -114,16 +119,15 @@ function pickFromIds(ids, n)
 function timerEnd()
 {
   stopTimer()
-  document.getElementById('testissimo').innerHTML = 'ABEMUS TEAM!!!!!';
+  document.getElementById('recap').innerHTML = 'ABEMUS TEAM!!!!!';
   ctx.result = 'done';
   
   const { teamCount, figerCount } = ctx;
   
-  let pickedCircles = new Map();
   const ids = Array.from(touchesMap.keys());
   if (figerCount > 0)
   {
-    pickedCircles = pickFromIds(ids, figerCount);
+    const pickedCircles = pickFromIds(ids, figerCount);
     Array.from(touchesMap.entries()).forEach(([id, circle]) =>
     {
       if (pickedCircles.get(id))
@@ -138,19 +142,22 @@ function timerEnd()
   }
   else if (teamCount > 0)
   {
+    const teams = new Map();
     let fingers = touchesMap.size;
     const teamFingers = Math.trunc(fingers / teamCount);
     let d = fingers % teamCount;
     for (let i = 0; i < teamCount; i++)
     {
-      const pickedTeam = pickFromIds(ids, teamFingers + d);
-      pickedCircles.set(`team_${i+1}`, pickedTeam);
+      let teamSize = teamFingers;
       if (d > 0)
       {
+        teamSize++;
         d--;
       }
+      const pickedTeam = pickFromIds(ids, teamSize);
+      teams.set(`team_${i+1}`, pickedTeam);
     }
-    Array.from(pickedCircles.entries()).forEach(([teamId, team]) =>
+    Array.from(teams.entries()).forEach(([teamId, team]) =>
     {
       let teamColor;
       Array.from(team.entries()).forEach(([id, circle]) =>
@@ -196,12 +203,24 @@ function restartTimer()
     {
       timerEnd();
     }, 1000 * 3);
-    let str = '+++';
-    document.getElementById('testissimo').innerHTML = str;
+    // let str = '+++';
+    let countDown = 3;
+    let stepDown = 1;
+
+    const circle = document.createElement('div');
+    circle.classList.add('count-circle');
+    circle.style.top = '10px';
+    circle.style.right = '10px';
+    circle.style.backgroundColor = pickColor();
+    document.body.appendChild(circle);
+    ctx.countCircle = circle;
+
+    // document.getElementById('recap').innerHTML = countDown + '';
+    ctx.countCircle.innerHTML = countDown + '';
     ctx.runningInterval = setInterval(() =>
     {
-      str = str.substring(1);
-      document.getElementById('testissimo').innerHTML = str;
+      countDown -= stepDown;
+      ctx.countCircle.innerHTML = countDown + '';
     }, 1000);
   }
 }
@@ -417,7 +436,7 @@ function mainLoad()
     }
   });
     
-  document.getElementById('testissimo').addEventListener('click', () =>
+  document.getElementById('recap').addEventListener('click', () =>
   {
     window.location.reload();
   });
