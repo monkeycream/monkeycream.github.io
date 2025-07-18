@@ -34,11 +34,37 @@ const COLORS2 = new Set([
 // }));
 
 const ctx = {
+  // mode:'dev',
   mode:'prod',
   colors:new Set(COLORS),
   teamCount:0,
   figerCount:1,
 };
+
+
+/**
+ * Xorshift128
+ * 
+ * @param {*} seed1 
+ * @param {*} seed2 
+ * @returns 
+function genRandomFun(seed1, seed2)
+{
+  let s0 = seed1 >>> 0;
+  let s1 = seed2 >>> 0;
+  
+  return (max) =>
+    {
+  let x = s0;
+  let y = s1;
+  s0 = y;
+  x ^= (x << 23) >>> 0;
+  s1 = (x ^ y ^ (x >>> 17) ^ (y >>> 26)) >>> 0;
+  const result = (s1 + y) >>> 0;
+  return Math.floor((result / 0x100000000) * (max + 1));
+};
+}
+*/
 
 
 function canCreateCircle()
@@ -62,7 +88,7 @@ function pickColor()
     let c;
     if (colorSize > 1)
     {
-      let i = Math.round(Math.random() * (colorSize - 1)); 
+      let i = Math.floor(Math.random() * (colorSize - 1)); 
       for (let x of ctx.colors.values())
       {
         if (i > 0)
@@ -211,7 +237,6 @@ function restartTimer()
     circle.classList.add('count-circle');
     circle.style.top = '10px';
     circle.style.right = '10px';
-    circle.style.backgroundColor = pickColor();
     document.body.appendChild(circle);
     ctx.countCircle = circle;
 
@@ -298,12 +323,37 @@ function clearAll()
   });
 }
 
-function upateCtx()
+function getQueryParams(keys)
+{
+  const params = new URLSearchParams(window.location.search);
+  const result = {};
+  keys.forEach(key =>
+  {
+    if (params.has(key) && Number.isInteger(parseInt(params.get(key))))
+    {
+      result[key] = parseInt(params.get(key));
+    }
+  });
+  return result;
+}
+
+function updateUrlQuery(params)
+{
+  const url = new URL(window.location.href);
+  Object.keys(params).forEach(key =>
+  {
+    url.searchParams.set(key, params[key]);
+  });
+  window.history.replaceState({}, '', url.toString());
+}
+
+function updateCtx()
 {
   clearAll();
   const { teamCount, figerCount } = ctx;
   document.getElementById('team_count_value').innerHTML = teamCount + '';
   document.getElementById('finger_count_value').innerHTML = figerCount + '';
+  updateUrlQuery({ teamCount, figerCount });
 }
 
 function bttUpdateFun(opts)
@@ -345,7 +395,7 @@ function bttUpdateFun(opts)
   {
     ctx.figerCount = 1;
   }
-  upateCtx();
+  updateCtx();
 }
 
 
@@ -440,8 +490,17 @@ function mainLoad()
   {
     window.location.reload();
   });
-      
-  upateCtx();
+  
+  const { teamCount, figerCount } = getQueryParams(['teamCount', 'figerCount']);
+  if (Number.isInteger(teamCount))
+  {
+    ctx.teamCount = teamCount;
+  }
+  if (Number.isInteger(figerCount))
+  {
+    ctx.figerCount = figerCount;
+  }
+  updateCtx();
   printCtx();
 }
 
